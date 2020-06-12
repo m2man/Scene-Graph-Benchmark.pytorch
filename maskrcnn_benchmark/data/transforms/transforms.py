@@ -23,6 +23,22 @@ class Compose(object):
         format_string += "\n)"
         return format_string
 
+class MyCompose(object):
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, image):
+        for t in self.transforms:
+            image = t(image)
+        return image
+
+    def __repr__(self):
+        format_string = self.__class__.__name__ + "("
+        for t in self.transforms:
+            format_string += "\n"
+            format_string += "    {0}".format(t)
+        format_string += "\n)"
+        return format_string
 
 class Resize(object):
     def __init__(self, min_size, max_size):
@@ -105,6 +121,9 @@ class ToTensor(object):
     def __call__(self, image, target):
         return F.to_tensor(image), target
 
+class MyToTensor(object):
+    def __call__(self, image):
+        return F.to_tensor(image)
 
 class Normalize(object):
     def __init__(self, mean, std, to_bgr255=True):

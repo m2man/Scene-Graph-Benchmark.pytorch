@@ -73,6 +73,8 @@ class VGDataset(torch.utils.data.Dataset):
         if img.size[0] != self.img_info[index]['width'] or img.size[1] != self.img_info[index]['height']:
             print('='*20, ' ERROR index ', str(index), ' ', str(img.size), ' ', str(self.img_info[index]['width']), ' ', str(self.img_info[index]['height']), ' ', '='*20)
 
+        #print(img.size)
+
         flip_img = (random.random() > 0.5) and self.flip_aug and (self.split == 'train')
         
         target = self.get_groundtruth(index, flip_img)
@@ -82,6 +84,8 @@ class VGDataset(torch.utils.data.Dataset):
 
         if self.transforms is not None:
             img, target = self.transforms(img, target)
+
+        #print(img.shape)
 
         return img, target, index
 

@@ -42,8 +42,10 @@ def main():
 
     args = parser.parse_args()
 
-    num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
+    # num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
+    num_gpus = 1
     distributed = num_gpus > 1
+    # cfg.MODEL.DEVICE = "cuda:1"
 
     if distributed:
         torch.cuda.set_device(args.local_rank)

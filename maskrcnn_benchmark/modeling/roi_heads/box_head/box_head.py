@@ -64,12 +64,20 @@ class ROIBoxHead(torch.nn.Module):
                     return x, proposals, {}
             else:
                 # mode==sgdet
-                proposals = self.samp_processor.assign_label_to_proposals(proposals, targets)
+                #torch.save(proposals, '/home/nmduy/Scene-Graph-Benchmark.pytorch/initial_proposals.pth')
+                '''
+                Since we dont have targets --> skip the assign label to proposals step
+                '''
+                # proposals = self.samp_processor.assign_label_to_proposals(proposals, targets)
+                #torch.save(proposals, '/home/nmduy/Scene-Graph-Benchmark.pytorch/post_proposals.pth')
                 x = self.feature_extractor(features, proposals)
                 class_logits, box_regression = self.predictor(x)
                 proposals = add_predict_logits(proposals, class_logits)
                 # post process:
                 # filter proposals using nms, keep original bbox, add a field 'boxes_per_cls' of size (#nms, #cls, 4)
+                '''
+                Since we dont have targets --> skip the add important fields in the post processor steps
+                '''
                 x, result = self.post_processor((x, class_logits, box_regression), proposals, relation_mode=True)
                 # note x is not matched with processed_proposals, so sharing x is not permitted
                 return x, result, {}

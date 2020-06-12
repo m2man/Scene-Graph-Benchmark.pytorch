@@ -26,3 +26,5 @@ dist/
 # MacOS
 .DS_Store
 
+*.pth
+pretrained_causal_motif_sgdet/

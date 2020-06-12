@@ -26,8 +26,11 @@ class GeneralizedRCNN(nn.Module):
     def __init__(self, cfg):
         super(GeneralizedRCNN, self).__init__()
         self.cfg = cfg.clone()
+        #print("build backbone")
         self.backbone = build_backbone(cfg)
+        #print("build rpn")
         self.rpn = build_rpn(cfg, self.backbone.out_channels)
+        #print("build roi head")
         self.roi_heads = build_roi_heads(cfg, self.backbone.out_channels)
 
     def forward(self, images, targets=None, logger=None):

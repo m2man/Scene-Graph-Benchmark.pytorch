@@ -16,20 +16,25 @@ from .bbox_aug import im_detect_bbox_aug
 
 
 def compute_on_dataset(model, data_loader, device, synchronize_gather=True, timer=None):
+    print(cfg.TEST.BBOX_AUG.ENABLED)
     model.eval()
     results_dict = {}
     cpu_device = torch.device("cpu")
     torch.cuda.empty_cache()
-    for _, batch in enumerate(tqdm(data_loader)):
+    for idx, batch in enumerate(tqdm(data_loader)):
         with torch.no_grad():
             images, targets, image_ids = batch
             targets = [target.to(device) for target in targets]
             if timer:
                 timer.tic()
             if cfg.TEST.BBOX_AUG.ENABLED:
+                if idx < 1:
+                    print("run im_detect_bbox")
                 output = im_detect_bbox_aug(model, images, device)
             else:
                 # relation detection needs the targets
+                if idx < 1:
+                    print("run model () to predict relation")
                 output = model(images.to(device), targets)
             if timer:
                 if not cfg.MODEL.DEVICE == 'cpu':
@@ -46,6 +51,8 @@ def compute_on_dataset(model, data_loader, device, synchronize_gather=True, time
             results_dict.update(
                 {img_id: result for img_id, result in zip(image_ids, output)}
             )
+        if idx < 10:
+            torch.save(results_dict, '/home/nmduy/Scene-Graph-Benchmark.pytorch/SG_predictions_small_batch.pth')
     torch.cuda.empty_cache()
     return results_dict
 
@@ -106,6 +113,7 @@ def inference(
     if load_prediction_from_cache:
         predictions = torch.load(os.path.join(output_folder, "eval_results.pytorch"), map_location=torch.device("cpu"))['predictions']
     else:
+        print('run compute_on_dataset')
         predictions = compute_on_dataset(model, data_loader, device, synchronize_gather=cfg.TEST.RELATION.SYNC_GATHER, timer=inference_timer)
     # wait for all processes to complete before measuring the time
     synchronize()
@@ -126,10 +134,15 @@ def inference(
     )
 
     if not load_prediction_from_cache:
+        print('run _accumulate_predictions_from_multiple_gpus')
         predictions = _accumulate_predictions_from_multiple_gpus(predictions, synchronize_gather=cfg.TEST.RELATION.SYNC_GATHER)
 
     if not is_main_process():
         return -1.0
+
+    # print('save prediction')
+    # torch.save(predictions, '/home/nmduy/Scene-Graph-Benchmark.pytorch/SG_predictions.pth')
+    # print('done saving prediction')
 
     #if output_folder is not None and not load_prediction_from_cache:
     #    torch.save(predictions, os.path.join(output_folder, "predictions.pth"))
